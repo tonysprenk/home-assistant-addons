@@ -87,6 +87,8 @@ log "default_airplay_volume=$DEFAULT_AIRPLAY_VOLUME"
 log "use_precision_timing=$USE_PRECISION_TIMING"
 log "disable_standby_mode=$DISABLE_STANDBY_MODE"
 
+print_command ls -la /dev/snd
+print_command cat /proc/asound/cards
 print_command aplay -l
 print_command aplay -L
 print_command amixer scontrols
