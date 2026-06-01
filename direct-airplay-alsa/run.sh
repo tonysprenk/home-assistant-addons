@@ -39,7 +39,6 @@ require_command "aplay"
 require_command "amixer"
 require_command "envsubst"
 require_command "jq"
-require_command "timeout"
 
 [ -f "$CONFIG_PATH" ] || fail "$CONFIG_PATH is missing"
 [ -f "$TEMPLATE_PATH" ] || fail "$TEMPLATE_PATH is missing"
@@ -122,17 +121,14 @@ if [ -n "$MIXER_NAME" ]; then
 fi
 
 log ""
-log "Probing ALSA output device $ALSA_DEVICE with two seconds of silence"
+log "Probing ALSA output device $ALSA_DEVICE with one second of silence"
 rm -f "$ALSA_PROBE_LOG"
 set +e
-timeout 2 aplay -D "$ALSA_DEVICE" -q -f S16_LE -c 2 -r 44100 /dev/zero >"$ALSA_PROBE_LOG" 2>&1
+aplay -D "$ALSA_DEVICE" -q -f S16_LE -c 2 -r 44100 -d 1 /dev/zero >"$ALSA_PROBE_LOG" 2>&1
 probe_status="$?"
 set -e
 
 case "$probe_status" in
-  124)
-    log "ALSA output device opened successfully"
-    ;;
   0)
     log "ALSA output probe completed successfully"
     ;;
