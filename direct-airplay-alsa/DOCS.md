@@ -15,8 +15,8 @@ Open the add-on logs and confirm these lines appear:
 
 ```text
 Direct AirPlay ALSA startup
-ALSA output device opened successfully
-Starting Shairport Sync service stack
+ALSA output probe completed successfully
+Starting Shairport Sync
 ```
 
 Select De Kleine Eekhoorn from Apple Music and start playback.
@@ -72,8 +72,8 @@ Direct AirPlay ALSA startup
 $ aplay -l
 $ aplay -L
 $ pactl list short sinks
-ALSA output device opened successfully
-Starting Shairport Sync service stack
+ALSA output probe completed successfully
+Starting Shairport Sync
 ```
 
 Expected playback evidence:

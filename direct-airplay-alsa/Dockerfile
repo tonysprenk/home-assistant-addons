@@ -7,6 +7,8 @@ RUN apk add --no-cache \
     jq \
     pulseaudio-utils
 
+RUN rm -f /etc/avahi/services/*.service
+
 COPY run.sh /run.sh
 COPY session-log.sh /usr/local/bin/session-log.sh
 COPY shairport-sync.conf.tpl /etc/shairport-sync.conf.tpl

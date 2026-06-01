@@ -5,6 +5,9 @@ CONFIG_PATH="/data/options.json"
 TEMPLATE_PATH="/etc/shairport-sync.conf.tpl"
 OUTPUT_PATH="/etc/shairport-sync.conf"
 ALSA_PROBE_LOG="/tmp/alsa-open-check.log"
+DBUS_LOG="/tmp/dbus.log"
+AVAHI_LOG="/tmp/avahi.log"
+NQPTP_LOG="/tmp/nqptp.log"
 
 log() {
   printf '%s\n' "$*"
@@ -35,10 +38,48 @@ print_command() {
   "$@" 2>&1 || true
 }
 
+wait_for_command() {
+  description="$1"
+  attempts="$2"
+  shift 2
+
+  i=1
+  while [ "$i" -le "$attempts" ]; do
+    if "$@" >/dev/null 2>&1; then
+      log "$description is ready"
+      return 0
+    fi
+    sleep 1
+    i=$((i + 1))
+  done
+
+  return 1
+}
+
+start_background_service() {
+  name="$1"
+  logfile="$2"
+  shift 2
+
+  log "Starting $name"
+  "$@" >"$logfile" 2>&1 &
+  pid="$!"
+  sleep 1
+  if ! kill -0 "$pid" >/dev/null 2>&1; then
+    cat "$logfile" >&2 || true
+    fail "$name exited during startup"
+  fi
+  log "$name started with pid $pid"
+}
+
 require_command "aplay"
 require_command "amixer"
+require_command "avahi-daemon"
+require_command "dbus-daemon"
+require_command "dbus-send"
 require_command "envsubst"
 require_command "jq"
+require_command "shairport-sync"
 
 [ -f "$CONFIG_PATH" ] || fail "$CONFIG_PATH is missing"
 [ -f "$TEMPLATE_PATH" ] || fail "$TEMPLATE_PATH is missing"
@@ -145,5 +186,30 @@ log "Rendered Shairport Sync config:"
 sed -n '1,160p' "$OUTPUT_PATH"
 
 log ""
-log "Starting Shairport Sync service stack"
-exec /init ./run.sh
+log "Starting runtime services"
+mkdir -p /run/dbus /run/avahi-daemon
+rm -f /run/dbus/pid /run/dbus/system_bus_socket /run/avahi-daemon/pid
+
+ulimit -n 1048576 >/dev/null 2>&1 || warn "Could not raise open-file limit"
+
+start_background_service "D-Bus" "$DBUS_LOG" dbus-daemon --system --nofork --nopidfile
+wait_for_command "D-Bus" 10 dbus-send --system / org.freedesktop.DBus.Peer.Ping || {
+  cat "$DBUS_LOG" >&2 || true
+  fail "D-Bus did not become ready"
+}
+
+start_background_service "Avahi" "$AVAHI_LOG" avahi-daemon --no-chroot
+wait_for_command "Avahi" 15 sh -c 'state="$(dbus-send --system --dest=org.freedesktop.Avahi --print-reply / org.freedesktop.Avahi.Server.GetState 2>/dev/null | awk "/int32/ {print \$2}")"; [ "$state" = "2" ]' || {
+  cat "$AVAHI_LOG" >&2 || true
+  fail "Avahi did not become ready"
+}
+
+if command -v nqptp >/dev/null 2>&1; then
+  start_background_service "NQPTP" "$NQPTP_LOG" nqptp
+else
+  warn "nqptp is missing; AirPlay 2 timing may not work"
+fi
+
+log ""
+log "Starting Shairport Sync"
+exec shairport-sync -c "$OUTPUT_PATH"
