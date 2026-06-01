@@ -1,9 +1,11 @@
 FROM mikebrady/shairport-sync:4.3.7
 
 RUN apk add --no-cache \
+    alsa-plugins-pulse \
     alsa-utils \
     envsubst \
-    jq
+    jq \
+    pulseaudio-utils
 
 COPY run.sh /run.sh
 COPY session-log.sh /usr/local/bin/session-log.sh

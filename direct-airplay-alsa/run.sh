@@ -43,11 +43,10 @@ require_command "timeout"
 
 [ -f "$CONFIG_PATH" ] || fail "$CONFIG_PATH is missing"
 [ -f "$TEMPLATE_PATH" ] || fail "$TEMPLATE_PATH is missing"
-[ -e /dev/snd ] || fail "/dev/snd is not available inside the add-on container"
 
 AIRPLAY_NAME="$(json_get airplay_name "De Kleine Eekhoorn")"
-ALSA_DEVICE="$(json_get alsa_device "plughw:0,0")"
-MIXER_NAME="$(json_get mixer_name "Headphone")"
+ALSA_DEVICE="$(json_get alsa_device "pulse")"
+MIXER_NAME="$(json_get mixer_name "")"
 MIXER_VOLUME="$(json_get mixer_volume "85")"
 LOG_LEVEL="$(json_get log_level "info")"
 INTERPOLATION="$(json_get interpolation "auto")"
@@ -86,9 +85,25 @@ log "interpolation=$INTERPOLATION"
 log "default_airplay_volume=$DEFAULT_AIRPLAY_VOLUME"
 log "use_precision_timing=$USE_PRECISION_TIMING"
 log "disable_standby_mode=$DISABLE_STANDBY_MODE"
+log "PULSE_SERVER=${PULSE_SERVER:-unset}"
 
-print_command ls -la /dev/snd
-print_command cat /proc/asound/cards
+if command -v pactl >/dev/null 2>&1; then
+  print_command pactl info
+  print_command pactl list short sinks
+fi
+
+if [ -d /run/audio ]; then
+  print_command ls -la /run/audio
+fi
+
+if [ -e /dev/snd ]; then
+  print_command ls -la /dev/snd
+fi
+
+if [ -f /proc/asound/cards ]; then
+  print_command cat /proc/asound/cards
+fi
+
 print_command aplay -l
 print_command aplay -L
 print_command amixer scontrols

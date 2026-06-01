@@ -6,7 +6,7 @@
 2. Add this repository to the Home Assistant add-on store, or copy `direct-airplay-alsa` into the local add-ons folder.
 3. Reload the add-on store.
 4. Install Direct AirPlay ALSA.
-5. Keep the default options for the Raspberry Pi headphone jack.
+5. Keep the default options for Home Assistant Audio.
 6. Start the add-on.
 
 ## Test
@@ -35,16 +35,9 @@ shairport-sync session event: play-ends
 
 ## Troubleshooting
 
-If the add-on exits with `/dev/snd is not available inside the add-on container`, verify the add-on manifest still includes:
+If the add-on exits with `Selected ALSA output device pulse could not be opened`, inspect the `pactl info`, `pactl list short sinks`, and `aplay -L` output printed above the error. Home Assistant Audio must expose a working PulseAudio server to the add-on.
 
-```yaml
-devices:
-  - /dev/snd
-```
-
-If the add-on exits with `Selected ALSA output device plughw:0,0 could not be opened`, inspect the `aplay -l` and `aplay -L` output printed above the error. Set `alsa_device` to one of the listed ALSA devices and restart the add-on.
-
-If the add-on warns that `Mixer control Headphone was not found`, leave playback testing enabled. Shairport Sync will use software volume when no hardware mixer is configured.
+If the add-on warns that a mixer control was not found, leave `mixer_name` empty. Home Assistant Audio owns the physical mixer and Shairport Sync will use software volume.
 
 If AirPlay discovery works but audio is silent, change `log_level` to `debug`, restart the add-on, start playback, and inspect the logs for `play-begins`, ALSA open errors, or Shairport Sync session errors.
 
@@ -62,8 +55,8 @@ Use these default options first:
 
 ```yaml
 airplay_name: De Kleine Eekhoorn
-alsa_device: plughw:0,0
-mixer_name: Headphone
+alsa_device: pulse
+mixer_name: ""
 mixer_volume: 85
 log_level: info
 interpolation: auto
@@ -78,7 +71,7 @@ Expected startup evidence:
 Direct AirPlay ALSA startup
 $ aplay -l
 $ aplay -L
-$ amixer scontrols
+$ pactl list short sinks
 ALSA output device opened successfully
 Starting Shairport Sync service stack
 ```

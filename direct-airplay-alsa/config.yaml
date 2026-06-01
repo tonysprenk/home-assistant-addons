@@ -1,6 +1,6 @@
 name: "Direct AirPlay ALSA"
-description: "AirPlay 2 receiver that outputs directly to the Raspberry Pi ALSA headphone device."
-version: "0.1.1"
+description: "AirPlay 2 receiver that outputs through Home Assistant Audio to the Raspberry Pi headphone device."
+version: "0.1.2"
 slug: "direct_airplay_alsa"
 url: "https://github.com/tonysprenk/home-assistant-addons/tree/main/direct-airplay-alsa"
 init: false
@@ -10,14 +10,11 @@ startup: application
 boot: auto
 host_network: true
 realtime: true
-devices:
-  - /dev/snd/controlC0
-  - /dev/snd/pcmC0D0p
-  - /dev/snd/timer
+audio: true
 options:
   airplay_name: "De Kleine Eekhoorn"
-  alsa_device: "plughw:0,0"
-  mixer_name: "Headphone"
+  alsa_device: "pulse"
+  mixer_name: ""
   mixer_volume: 85
   log_level: "info"
   interpolation: "auto"
