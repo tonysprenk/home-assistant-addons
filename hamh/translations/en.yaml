@@ -8,6 +8,10 @@ configuration:
     name: Disable log colors
     description: |
       Print the log as plain text without any colors.
+  http_ip_whitelist:
+    name: Extra HTTP IP whitelist
+    description: |
+      Optional comma-separated IPv4, IPv6, or CIDR entries allowed to access the Matter Hub web UI and API in addition to Home Assistant Core ingress. Leave empty unless another trusted Home Assistant add-on needs direct API access.
   mdns_network_interface:
     name: mDNS Network Interface
     description: |
