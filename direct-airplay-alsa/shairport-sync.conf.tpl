@@ -4,6 +4,7 @@ general =
   interpolation = "${INTERPOLATION}";
   output_backend = "alsa";
   default_airplay_volume = ${DEFAULT_AIRPLAY_VOLUME};
+${AIRPLAY_DEVICE_ID_CONFIG_LINE}
   drift_tolerance_in_seconds = 0.002;
   resync_threshold_in_seconds = 0.050;
 };
@@ -32,5 +33,5 @@ diagnostics =
 {
   log_verbosity = ${LOG_VERBOSITY_NUM};
   log_output_to = "stderr";
-  statistics = "yes";
+  statistics = "${STATISTICS}";
 };

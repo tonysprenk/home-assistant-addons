@@ -1,6 +1,6 @@
 name: "Direct AirPlay ALSA"
 description: "AirPlay 2 receiver that outputs through Home Assistant Audio to the Raspberry Pi headphone device."
-version: "0.1.4"
+version: "0.1.5"
 slug: "direct_airplay_alsa"
 url: "https://github.com/tonysprenk/home-assistant-addons/tree/main/direct-airplay-alsa"
 init: false
@@ -9,6 +9,7 @@ arch:
 startup: application
 boot: auto
 host_network: true
+watchdog: "tcp://[HOST]:[PORT:7000]"
 realtime: true
 audio: true
 options:
@@ -21,6 +22,8 @@ options:
   default_airplay_volume: "-12.0"
   use_precision_timing: "no"
   disable_standby_mode: "always"
+  statistics: "no"
+  airplay_device_id: ""
 schema:
   airplay_name: "match(^[A-Za-z0-9 ._-]{1,50}$)"
   alsa_device: "match(^[A-Za-z0-9:._,-]{1,80}$)"
@@ -31,3 +34,5 @@ schema:
   default_airplay_volume: "match(^-?[0-9]+(\\.[0-9]+)?$)"
   use_precision_timing: "list(no|yes|auto)"
   disable_standby_mode: "list(always|auto|never)"
+  statistics: "list(no|yes)"
+  airplay_device_id: "match(^([0-9A-Fa-f]{12,16})?$)"

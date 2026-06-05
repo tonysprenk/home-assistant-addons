@@ -93,11 +93,18 @@ INTERPOLATION="$(json_get interpolation "auto")"
 DEFAULT_AIRPLAY_VOLUME="$(json_get default_airplay_volume "-12.0")"
 USE_PRECISION_TIMING="$(json_get use_precision_timing "no")"
 DISABLE_STANDBY_MODE="$(json_get disable_standby_mode "always")"
+STATISTICS="$(json_get statistics "no")"
+AIRPLAY_DEVICE_ID="$(json_get airplay_device_id "")"
 
 case "$LOG_LEVEL" in
   debug) LOG_VERBOSITY_NUM="2" ;;
   info) LOG_VERBOSITY_NUM="0" ;;
   *) fail "Unsupported log_level: $LOG_LEVEL" ;;
+esac
+
+case "$STATISTICS" in
+  yes|no) ;;
+  *) fail "Unsupported statistics setting: $STATISTICS" ;;
 esac
 
 if [ -n "$MIXER_NAME" ]; then
@@ -106,14 +113,22 @@ else
   MIXER_CONFIG_LINE="  // mixer_control_name omitted; Shairport Sync software volume is used."
 fi
 
+if [ -n "$AIRPLAY_DEVICE_ID" ]; then
+  AIRPLAY_DEVICE_ID_CONFIG_LINE="  airplay_device_id = 0x${AIRPLAY_DEVICE_ID}L;"
+else
+  AIRPLAY_DEVICE_ID_CONFIG_LINE="  // airplay_device_id omitted; Shairport Sync derives a stable identifier."
+fi
+
 export AIRPLAY_NAME
 export ALSA_DEVICE
 export MIXER_CONFIG_LINE
+export AIRPLAY_DEVICE_ID_CONFIG_LINE
 export LOG_VERBOSITY_NUM
 export INTERPOLATION
 export DEFAULT_AIRPLAY_VOLUME
 export USE_PRECISION_TIMING
 export DISABLE_STANDBY_MODE
+export STATISTICS
 
 log "Direct AirPlay ALSA startup"
 log "airplay_name=$AIRPLAY_NAME"
@@ -125,7 +140,11 @@ log "interpolation=$INTERPOLATION"
 log "default_airplay_volume=$DEFAULT_AIRPLAY_VOLUME"
 log "use_precision_timing=$USE_PRECISION_TIMING"
 log "disable_standby_mode=$DISABLE_STANDBY_MODE"
+log "statistics=$STATISTICS"
+log "airplay_device_id=${AIRPLAY_DEVICE_ID:-derived}"
 log "PULSE_SERVER=${PULSE_SERVER:-unset}"
+
+print_command shairport-sync -V
 
 if command -v pactl >/dev/null 2>&1; then
   print_command pactl info
@@ -184,6 +203,7 @@ log "Rendering $TEMPLATE_PATH to $OUTPUT_PATH"
 envsubst < "$TEMPLATE_PATH" > "$OUTPUT_PATH"
 log "Rendered Shairport Sync config:"
 sed -n '1,160p' "$OUTPUT_PATH"
+print_command shairport-sync --displayConfig
 
 log ""
 log "Starting runtime services"

@@ -15,7 +15,9 @@ Open the add-on logs and confirm these lines appear:
 
 ```text
 Direct AirPlay ALSA startup
+$ shairport-sync -V
 ALSA output probe completed successfully
+$ shairport-sync --displayConfig
 Starting Shairport Sync
 ```
 
@@ -41,6 +43,8 @@ If the add-on warns that a mixer control was not found, leave `mixer_name` empty
 
 If AirPlay discovery works but audio is silent, change `log_level` to `debug`, restart the add-on, start playback, and inspect the logs for `play-begins`, ALSA open errors, or Shairport Sync session errors.
 
+If Apple Home keeps showing stale `No Response` state after upgrading, leave `airplay_device_id` empty for the first test. If the issue remains, configure a fixed 12-16 digit hexadecimal ID and re-add the speaker to Apple Home so HomeKit sees a stable receiver identity.
+
 ## Rollback
 
 1. Stop Direct AirPlay ALSA.
@@ -63,6 +67,8 @@ interpolation: auto
 default_airplay_volume: "-12.0"
 use_precision_timing: "no"
 disable_standby_mode: always
+statistics: "no"
+airplay_device_id: ""
 ```
 
 Expected startup evidence:
@@ -73,6 +79,7 @@ $ aplay -l
 $ aplay -L
 $ pactl list short sinks
 ALSA output probe completed successfully
+$ shairport-sync --displayConfig
 Starting Shairport Sync
 ```
 
