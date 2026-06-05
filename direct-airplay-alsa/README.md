@@ -4,7 +4,7 @@ Direct AirPlay ALSA turns a Raspberry Pi running Home Assistant OS into an AirPl
 
 The add-on uses Home Assistant's supported PulseAudio bridge (`audio: true`) and the ALSA PulseAudio plugin. Shairport Sync still uses its ALSA backend, but Home Assistant OS owns the physical sound card.
 
-Version `0.1.5` uses Shairport Sync `5.0.4` and keeps per-second Shairport statistics disabled by default to avoid noisy logs.
+Version `0.1.6` uses Shairport Sync `5.0.4`, keeps per-second Shairport statistics disabled by default, and logs the open-file limit without warning when the container cannot raise it.
 
 Default settings target the Raspberry Pi 3.5 mm jack:
 

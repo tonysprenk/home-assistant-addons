@@ -41,6 +41,8 @@ If the add-on exits with `Selected ALSA output device pulse could not be opened`
 
 If the add-on warns that a mixer control was not found, leave `mixer_name` empty. Home Assistant Audio owns the physical mixer and Shairport Sync will use software volume.
 
+The startup log includes `open_file_limit=...` for diagnostics. This is informational only; the app no longer warns when the container runtime refuses a higher limit.
+
 If AirPlay discovery works but audio is silent, change `log_level` to `debug`, restart the add-on, start playback, and inspect the logs for `play-begins`, ALSA open errors, or Shairport Sync session errors.
 
 If Apple Home keeps showing stale `No Response` state after upgrading, leave `airplay_device_id` empty for the first test. If the issue remains, configure a fixed 12-16 digit hexadecimal ID and re-add the speaker to Apple Home so HomeKit sees a stable receiver identity.

@@ -56,6 +56,24 @@ wait_for_command() {
   return 1
 }
 
+configure_open_file_limit() {
+  current_limit="$(ulimit -n 2>/dev/null || printf 'unknown')"
+
+  case "$current_limit" in
+    ''|*[!0-9]*)
+      log "open_file_limit=${current_limit:-unknown}"
+      return 0
+      ;;
+  esac
+
+  if [ "$current_limit" -lt 4096 ]; then
+    ulimit -n 4096 >/dev/null 2>&1 || true
+    current_limit="$(ulimit -n 2>/dev/null || printf '%s' "$current_limit")"
+  fi
+
+  log "open_file_limit=$current_limit"
+}
+
 start_background_service() {
   name="$1"
   logfile="$2"
@@ -210,7 +228,7 @@ log "Starting runtime services"
 mkdir -p /run/dbus /run/avahi-daemon
 rm -f /run/dbus/pid /run/dbus/system_bus_socket /run/avahi-daemon/pid
 
-ulimit -n 1048576 >/dev/null 2>&1 || warn "Could not raise open-file limit"
+configure_open_file_limit
 
 start_background_service "D-Bus" "$DBUS_LOG" dbus-daemon --system --nofork --nopidfile
 wait_for_command "D-Bus" 10 dbus-send --system / org.freedesktop.DBus.Peer.Ping || {
